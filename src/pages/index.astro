@@ -1,0 +1,55 @@
+---
+//layouts
+import BaseLayout from '@layouts/BaseLayout.astro';
+//components
+import Container from '@components/base/Container.astro';
+import FormattedDate from '@components/FormattedDate.astro';
+import { Image } from 'astro:assets';
+//data getCollection
+import { getCollection } from 'astro:content';
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const feature_post = posts[0];
+---
+<BaseLayout>
+	<Container class="py-2">
+		<h2 class="text-3xl font-bold mb-4">Feature posts</h2>
+
+		<a class="group block" href={`/blog/${feature_post.slug}/`}>
+			<article class="flex flex-col sm:flex-row gap-3">
+				<div class="basis-1/2 overflow-hidden">
+					<Image class="group-hover:scale-125 transition-all w-full h-full object-cover" src={feature_post.data.heroImage} alt={feature_post.data.title} width={720} height={360} />
+				</div>
+				<div class="basis-1/2 space-y-2 mt-3">
+					<h4 class="group-hover:text-orange-500 group-hover:dark:text-orange-600 transition-all text-xl font-bold text-neutral-800 dark:text-neutral-200">{feature_post.data.title}</h4>
+					<p class="text-neutral-500 dark:text-neutral-400">
+						<FormattedDate date={feature_post.data.pubDate} />
+					</p>
+					<p class="text-neutral-700 dark:text-neutral-300">{feature_post.data.description}</p>
+				</div>
+			</article>
+		</a>
+	</Container>
+
+	<Container class="py-2">
+		<h2 class="text-3xl font-bold mb-4">List Post</h2>
+
+		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+			{ posts.slice(1).map((post) => (
+				<a class="group block"  href={`/blog/${post.slug}/`}>
+					<article>
+						<Image width={720} height={360} src={post.data.heroImage}  alt={feature_post.data.title}/>
+						<div class="space-y-2 mt-3">
+							<h4 class="group-hover:text-orange-500 group-hover:dark:text-orange-600 transition-all text-xl font-bold text-neutral-800 dark:text-neutral-200">{post.data.title}</h4>
+							<p class="text-neutral-500 dark:text-neutral-400">
+								<FormattedDate date={post.data.pubDate} />
+							</p>
+							<p class="text-neutral-700 dark:text-neutral-300">{post.data.description}</p>
+						</div>
+					</article>
+				</a>
+			))}
+		</div>
+	</Container>
+</BaseLayout>

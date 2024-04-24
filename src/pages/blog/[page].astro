@@ -1,0 +1,55 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Container from '@components/base/Container.astro';
+import {Image} from 'astro:assets';
+import FormattedDate from '@components/FormattedDate.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths({ paginate }) {
+  const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+  // Generate pages from our array of astronauts, with 2 to a page
+  return paginate(posts, { pageSize: 3 });
+}
+// All paginated data is passed on the "page" prop
+const { page } = Astro.props;
+import { Pagination } from "@sarissa/pagination";
+const totalPage = Math.ceil( page.total / page.size ) ;
+---
+<BaseLayout>
+	<Container class="space-y-12">
+		<h1 class="text-3xl font-bold">Blog Post</h1>
+		<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+			{page.data.map(p =>
+				<article class="group space-y-3">
+					<a class="block overflow-hidden" href={`/blog/${p.slug}/`}><Image class="group-hover:scale-125 transition-all" src={p.data.heroImage} alt={p.data.title} loading="eager" /></a>
+					<div>
+						<h2 class="group-hover:text-orange-500 group-hover:dark:text-orange-600 transition-all text-xl font-bold text-neutral-800 dark:text-neutral-200"><a href={"/blog/" + p.slug}>{p.data.title}</a></h2>
+						<div><FormattedDate date={p.data.pubDate} /></div>
+						<p class="text-neutral-700 dark:text-neutral-300">{p.data.description}</p>
+					</div>
+				</article>
+			)}
+		</div>
+
+		<nav class="max-w-lg mx-auto flex justify-center items-center gap-2">
+			<a class="px-2 py-1 border" href={page.url.prev}>
+				<span class="sr-only">prev</span>
+				<svg class="w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589L7.82843 10.9999Z"></path></svg>
+			</a>
+			<Pagination
+				buttonGroup="space-x-1"
+				currentPage={page.currentPage}
+				{totalPage}
+				url="blog"
+				activeButton="bg-gray-900 text-white"
+			/>
+			<a class="px-2 py-1 border" href={page.url.next}>
+				<span class="sr-only">next</span>
+				<svg class="w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path></svg>
+			</a>
+		</nav>
+	</Container>
+</BaseLayout>
+

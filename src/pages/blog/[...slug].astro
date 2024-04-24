@@ -1,0 +1,48 @@
+---
+// layouts
+import BaseLayout from '@layouts/BaseLayout.astro';
+import {Image} from 'astro:assets';
+import FormattedDate from '@components/FormattedDate.astro';
+import { getCollection } from 'astro:content';
+import BlogPost from '@layouts/BlogPost.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	return posts.map((post) => ({
+		params: { slug: post.slug },
+		props: post,
+	}));
+}
+const post = Astro.props;
+const { Content, remarkPluginFrontmatter } = await post.render();
+---
+<BaseLayout>
+	<article class="max-w-4xl mx-auto px-4">
+		<div class="space-y-4 mb-8">
+			<h1 class="text-3xl text-center font-bold text-neutral-700">{post.data.title}</h1>
+			<div class="flex gap-2 items-center">
+				<FormattedDate class="text-neutral-500" date={post.data.pubDate} />
+					{ post.data.updatedDate && ( <div class="last-updated-on"> Last updated on <FormattedDate date={post.data.updatedDate} /></div>)
+					}
+				<p class="text-neutral-500">{remarkPluginFrontmatter.minutesRead}</p>
+			</div>
+
+			{post.data.heroImage &&
+				<Image class="rounded" widths={[240, 540, 720, post.data.heroImage.width]}
+				sizes={`(max-width: 360px) 240px, (max-width: 720px) 540px, (max-width: 1600px) 720px, ${post.data.heroImage.width}px`} src={post.data.heroImage} alt={post.data.title}
+			/>}
+		</div>
+		<div
+		class="prose max-w-none dark:prose-invert prose-neutral prose-sm md:prose-base prose-headings:font-bold prose-headings:text-neutral-700 prose-a:text-sky-900 prose-ol:marker:text-sky-700 prose-thead:bg-sky-50
+		">
+			<Content />
+		</div>
+	</article>
+</BaseLayout>
+
+{/*
+<BlogPost {...post.data}>
+	<Content />
+</BlogPost>
+
+*/}
